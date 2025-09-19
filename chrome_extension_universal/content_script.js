@@ -15,21 +15,7 @@
     }
     window.UniversalNSFWFilterLoaded = true;
 
-    // Load ONNX Runtime Web
-    if (!window.ort) {
-        console.log('🔄 Loading ONNX Runtime Web...');
-        const script = document.createElement('script');
-        script.src = chrome.runtime.getURL('ort.min.js');
-        script.onload = function() {
-            console.log('✅ ONNX Runtime Web loaded successfully');
-        };
-        script.onerror = function() {
-            console.error('❌ Failed to load ONNX Runtime Web');
-        };
-        document.head.appendChild(script);
-    }
-
-    class UniversalVideoProcessor {
+class UniversalVideoProcessor {
     constructor() {
         this.apiEndpoint = 'http://localhost:5000/process-frame-stream';
         this.imageApiEndpoint = 'http://localhost:5000/process-image';
@@ -69,11 +55,6 @@
             startTime: Date.now()
         };
         
-        // ONNX model for local processing
-        this.onnxModel = null;
-        this.isModelLoading = false;
-        this.modelLoaded = false;
-        
         // Adaptive settings based on website
         this.websiteSettings = this.detectWebsiteSettings();
         
@@ -86,140 +67,11 @@
         this.initializeCanvas();
         this.loadSettings();
         
-        // Load ONNX model on initialization
-        this.loadONNXModel();
-        
         // Start image processing immediately for instant blur on ALL websites
         this.startImageProcessingImmediately();
         
         // Start video processing (can be delayed)
         this.startProcessing();
-    }
-    
-    async loadONNXModel() {
-        if (this.isModelLoading || this.modelLoaded) return;
-        
-        this.isModelLoading = true;
-        console.log('🔄 Loading ONNX model for local NSFW detection...');
-        
-        try {
-            // Wait for ONNX Runtime to be available
-            if (!window.ort) {
-                await new Promise((resolve, reject) => {
-                    const checkORT = () => {
-                        if (window.ort) {
-                            resolve();
-                        } else {
-                            setTimeout(checkORT, 100);
-                        }
-                    };
-                    setTimeout(() => reject(new Error('ONNX Runtime not loaded')), 10000);
-                    checkORT();
-                });
-            }
-            
-            // Load the ONNX model
-            const modelUrl = chrome.runtime.getURL('best.onnx');
-            this.onnxModel = await window.ort.InferenceSession.create(modelUrl);
-            
-            this.modelLoaded = true;
-            console.log('✅ ONNX model loaded successfully');
-            
-        } catch (error) {
-            console.error('❌ Failed to load ONNX model:', error);
-            // Fallback to API if model loading fails
-            this.modelLoaded = false;
-        } finally {
-            this.isModelLoading = false;
-        }
-    }
-    
-    async processImageWithONNX(imageData, imageId) {
-        if (!this.modelLoaded || !this.onnxModel) {
-            throw new Error('ONNX model not loaded');
-        }
-        
-        try {
-            // Decode base64 image
-            const img = new Image();
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = `data:image/jpeg;base64,${imageData}`;
-            });
-            
-            // Create canvas for preprocessing
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = 320;
-            canvas.height = 320;
-            
-            // Draw and resize image
-            ctx.drawImage(img, 0, 0, 320, 320);
-            
-            // Get image data
-            const imageDataRGBA = ctx.getImageData(0, 0, 320, 320);
-            const data = imageDataRGBA.data;
-            
-            // Convert to tensor format (NCHW: batch, channels, height, width)
-            const inputTensor = new Float32Array(320 * 320 * 3);
-            let idx = 0;
-            
-            for (let i = 0; i < data.length; i += 4) {
-                // RGB channels, normalize to [0, 1]
-                inputTensor[idx++] = data[i] / 255.0;     // R
-                inputTensor[idx++] = data[i + 1] / 255.0; // G
-                inputTensor[idx++] = data[i + 2] / 255.0; // B
-            }
-            
-            // Create ONNX tensor
-            const tensor = new window.ort.Tensor('float32', inputTensor, [1, 3, 320, 320]);
-            
-            // Run inference
-            const feeds = {};
-            feeds[this.onnxModel.inputNames[0]] = tensor;
-            
-            const results = await this.onnxModel.run(feeds);
-            const output = results[this.onnxModel.outputNames[0]];
-            
-            // Process output - assuming YOLO format [batch, num_boxes, 4 + num_classes]
-            const outputData = output.data;
-            const numBoxes = output.dims[1];
-            const numClasses = output.dims[2] - 4; // 4 for bbox coordinates
-            
-            let maxConfidence = 0;
-            let nsfwDetected = false;
-            
-            // Check for NSFW classes (assuming specific class indices for NSFW content)
-            const nsfwClassIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]; // All classes from the labels
-            
-            for (let i = 0; i < numBoxes; i++) {
-                const offset = i * (4 + numClasses);
-                const confidence = outputData[offset + 4]; // Object confidence
-                
-                if (confidence > this.imageBlurSettings.sensitivity) {
-                    // Check if any NSFW class has high confidence
-                    for (const classIdx of nsfwClassIndices) {
-                        const classConfidence = outputData[offset + 5 + classIdx];
-                        if (classConfidence > this.imageBlurSettings.sensitivity) {
-                            nsfwDetected = true;
-                            maxConfidence = Math.max(maxConfidence, classConfidence);
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            return {
-                nsfw_detected: nsfwDetected,
-                confidence: maxConfidence,
-                processed_locally: true
-            };
-            
-        } catch (error) {
-            console.error('ONNX processing error:', error);
-            throw error;
-        }
     }
     
     async startImageProcessingImmediately() {
@@ -1662,16 +1514,26 @@
                 return;
             }
 
-            // Try local ONNX processing only
-            let result;
-            if (this.modelLoaded) {
-                result = await this.processImageWithONNX(imageData, imageItem.imageId);
-                console.log('✅ Processed image locally with ONNX');
-            } else {
-                // Skip if model not loaded
-                console.log('Model not loaded, skipping image processing');
-                return;
+            // Send to API for processing with shorter timeout for instant blur
+            const response = await fetch(this.imageApiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: imageData,
+                    image_id: imageItem.imageId,
+                    confidence: this.imageBlurSettings.sensitivity,
+                    fast_mode: true
+                }),
+                signal: AbortSignal.timeout(2000) // Shorter timeout for instant processing
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status}`);
             }
+
+            const result = await response.json();
 
             // Apply blur if NSFW content detected
             if (result.nsfw_detected) {

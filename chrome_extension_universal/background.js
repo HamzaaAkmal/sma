@@ -48,9 +48,6 @@ class UniversalNSFWBackground {
                 this.reinitializeAllTabs();
             });
             
-            // Setup webRequest interception for pre-load image blurring
-            this.setupWebRequestInterception();
-            
             // Periodic cleanup
             setInterval(() => {
                 this.cleanupInactiveTabs();
@@ -94,28 +91,6 @@ class UniversalNSFWBackground {
                 });
             }
         }
-    }
-    
-    setupWebRequestInterception() {
-        console.log('🔍 Setting up webRequest interception for pre-load image blurring');
-        
-        // Note: In Manifest V3, we cannot use blocking webRequest listeners
-        // Instead, we'll rely on content script processing for instant blurring
-        
-        // Intercept image requests (non-blocking)
-        chrome.webRequest.onBeforeRequest.addListener(
-            (details) => {
-                console.log('🖼️ Intercepting image request:', details.url);
-                // For now, just log the request
-                return {};
-            },
-            {
-                urls: ["<all_urls>"],
-                types: ["image"]
-            }
-        );
-        
-        console.log('✅ WebRequest interception setup (non-blocking mode)');
     }
     
     async handleTabUpdate(tabId, changeInfo, tab) {

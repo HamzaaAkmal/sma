@@ -4,13 +4,6 @@ An advanced, real-time NSFW content detection and blurring system optimized for 
 
 ## 🚀 Key Enhancements
 
-### ⚡ Local Browser Processing (NEW!)
-- **Zero Latency**: ONNX model runs directly in Chrome browser
-- **No Server Required**: Process images locally without network calls
-- **Instant Detection**: Blur NSFW content before users can see it
-- **Offline Capable**: Works without internet connection
-- **Automatic Fallback**: Seamlessly falls back to server if needed
-
 ### Pixel-Perfect Blurring
 - **Multi-stage blur algorithm**: Gaussian blur + Pixelation + Motion blur
 - **Smooth edge blending**: Gradual transitions to avoid harsh edges
