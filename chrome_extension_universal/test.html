@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal NSFW Filter - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-video {
+            width: 100%;
+            max-width: 640px;
+            height: 360px;
+            background: #000;
+            margin: 20px auto;
+            display: block;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .extension-status {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔞 Universal NSFW Filter - Test Page</h1>
+        
+        <div class="status info">
+            <strong>Test Environment:</strong> This page contains sample video elements to test the Universal NSFW Filter extension.
+        </div>
+        
+        <div id="extensionStatus" class="extension-status">
+            <strong>Extension Status:</strong> <span id="statusText">Checking...</span>
+        </div>
+        
+        <!-- Test Video Element -->
+        <video class="test-video" controls id="testVideo">
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <div class="controls">
+            <button class="btn" id="playBtn">▶️ Play Video</button>
+            <button class="btn" id="pauseBtn">⏸️ Pause Video</button>
+            <button class="btn" id="checkBtn">🔍 Check Extension</button>
+            <button class="btn" id="clearBtn">🗑️ Clear Log</button>
+        </div>
+        
+        <div class="status success">
+            <strong>Expected Behavior:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Extension should automatically detect the video element</li>
+                <li>Video frames should be captured and processed</li>
+                <li>Any NSFW content would be blurred in real-time</li>
+                <li>Check browser console for processing logs</li>
+            </ul>
+        </div>
+        
+        <div id="testLog" class="log">
+            <div><strong>Test Log:</strong></div>
+            <div id="logContent">Starting test environment...</div>
+        </div>
+    </div>
+
+    <script src="test.js"></script>
+</body>
+</html>

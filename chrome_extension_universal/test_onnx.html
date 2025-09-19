@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONNX Test</title>
+    <script src="ort.min.js"></script>
+</head>
+<body>
+    <h1>ONNX Model Test</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="testONNX()">Test ONNX Processing</button>
+    <div id="result"></div>
+    <img id="testImage" style="max-width: 400px;">
+
+    <script>
+        let onnxModel = null;
+
+        async function loadModel() {
+            try {
+                console.log('Loading ONNX model...');
+                // For testing, we'll use a placeholder. In the extension, this would be the actual model
+                onnxModel = 'loaded';
+                console.log('Model loaded successfully');
+            } catch (error) {
+                console.error('Failed to load model:', error);
+            }
+        }
+
+        async function testONNX() {
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            const testImage = document.getElementById('testImage');
+
+            if (!fileInput.files[0]) {
+                resultDiv.textContent = 'Please select an image first';
+                return;
+            }
+
+            resultDiv.textContent = 'Processing...';
+
+            try {
+                const file = fileInput.files[0];
+                const img = new Image();
+
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = URL.createObjectURL(file);
+                });
+
+                testImage.src = img.src;
+
+                // Simulate ONNX processing (in real extension, this would use the actual model)
+                setTimeout(() => {
+                    const mockResult = {
+                        nsfw_detected: Math.random() > 0.7, // Random detection for testing
+                        confidence: Math.random(),
+                        processed_locally: true
+                    };
+
+                    resultDiv.textContent = `Result: ${JSON.stringify(mockResult, null, 2)}`;
+
+                    if (mockResult.nsfw_detected) {
+                        // Apply blur effect
+                        testImage.style.filter = 'blur(10px)';
+                        resultDiv.textContent += '\n\n🔞 NSFW content detected - image blurred!';
+                    }
+                }, 1000);
+
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                console.error(error);
+            }
+        }
+
+        // Load model on page load
+        loadModel();
+    </script>
+</body>
+</html>

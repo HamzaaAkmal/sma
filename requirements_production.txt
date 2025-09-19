@@ -1,0 +1,61 @@
+# Production requirements for ultra-fast NSFW detection API
+# Optimized for Digital Ocean GPU droplets
+
+# Core ML and AI frameworks
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+ultralytics>=8.0.100
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+Pillow>=9.5.0
+
+# Web framework and API
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+gunicorn>=21.0.0
+gevent>=22.10.0
+
+# Performance and optimization
+uvloop>=0.17.0
+psutil>=5.9.0
+cython>=0.29.0
+
+# Image processing optimizations
+pillow-simd>=9.0.0  # SIMD-optimized Pillow
+opencv-contrib-python-headless>=4.8.0
+
+# CUDA and GPU optimizations (optional, will install if available)
+nvidia-ml-py>=11.495.46
+
+# Async and concurrent processing
+asyncio-throttle>=1.0.2
+aiofiles>=23.1.0
+
+# Monitoring and logging
+prometheus-client>=0.16.0
+structlog>=23.1.0
+
+# HTTP client optimizations
+httpx>=0.24.0
+aiohttp>=3.8.0
+
+# Memory and performance profiling (for debugging)
+memory-profiler>=0.60.0
+py-spy>=0.3.14
+
+# Utilities
+python-dotenv>=1.0.0
+click>=8.1.0
+tqdm>=4.65.0
+pyyaml>=6.0
+
+# Optional: TensorRT (requires NVIDIA drivers)
+# nvidia-tensorrt  # Uncomment if TensorRT is available
+
+# Optional: ONNX for model optimization
+onnx>=1.14.0
+onnxruntime-gpu>=1.15.0
+
+# Optional: Intel optimization (for CPU inference)
+# intel-extension-for-pytorch  # Uncomment for Intel CPUs

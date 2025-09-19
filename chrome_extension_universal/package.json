@@ -1,0 +1,8 @@
+{
+  "name": "universal-nsfw-filter",
+  "version": "1.0.0",
+  "description": "Chrome extension for NSFW content filtering",
+  "dependencies": {
+    "onnxruntime-web": "^1.17.0"
+  }
+}
